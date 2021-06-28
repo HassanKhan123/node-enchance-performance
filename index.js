@@ -1,8 +1,20 @@
-const express = require('express');
-const app = express();
+const cluster = require('cluster');
 
-app.get('/', (req, res) => {
-  res.send('Hi there');
-});
+if (cluster.isMaster) {
+  cluster.fork();
+} else {
+  const express = require('express');
+  const app = express();
 
-app.listen(3000);
+  const doWork = duration => {
+    const start = Date.now();
+    while (Date.now() - start < duration) {}
+  };
+
+  app.get('/', (req, res) => {
+    doWork(5000);
+    res.send('Hi there');
+  });
+
+  app.listen(3000);
+}
